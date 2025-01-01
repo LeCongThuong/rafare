@@ -7,6 +7,7 @@ from engineer.utils.mmcv_config import Config
 import pandas as pd
 from tqdm import tqdm
 from pathlib import Path
+import torch
 
 
 sys.path.append("engineer/face_parse/")
@@ -18,8 +19,6 @@ from norm_pred import norm_pred
 
 
 if __name__ == "__main__":
-    hg_base = load_trained_model(os.path.join('.', "configs", "SDF_FS103450_HG_base.py"), "epoch_best.tar")
-    hg_fine = load_trained_model(os.path.join('.', "configs", "SDF_FS103450_HG_fine.py"), "epoch_best.tar")
     csv_file = "/mnt/hmi/thuong/Photoface_dist/PhotofaceDBNormalTrainValTest2/dataset_0/test.csv"
     data_dir =  "/mnt/hmi/thuong/Photoface_dist/PhotofaceDBLib/"
     result_dir = "./results"
@@ -29,6 +28,8 @@ if __name__ == "__main__":
 
 
     for image_idx in tqdm(range(num_img)):
+        hg_base = load_trained_model(os.path.join('.', "configs", "SDF_FS103450_HG_base.py"), "epoch_best.tar")
+        hg_fine = load_trained_model(os.path.join('.', "configs", "SDF_FS103450_HG_fine.py"), "epoch_best.tar")
         im_path = os.path.join(data_dir, data_info.iloc[image_idx, 0])
     
         src_img = cv2.imread(str(im_path))
@@ -60,9 +61,11 @@ if __name__ == "__main__":
 
         # render in front view
         normal = render_rafare(pred_align_mesh)
-        normal = normal.reshape((512, 512))
-        print(normal.shape)
-        cv2.resize(normal, (256, 256), interpolation=cv2.INTER_NEAREST)
-        dest_path = os.path.join(result_dir, data_info.iloc[image_idx, 0]).replace("crop.jpg", "predict.npy")
+        normal = normal.reshape((512, 512, 3))
+        normal = cv2.resize(normal, (256, 256), interpolation=cv2.INTER_NEAREST)
+        dest_path = os.path.join(result_dir, data_info.iloc[image_idx, 0]).replace("crop.jpg", "predict.png")
         Path(dest_path).parent.mkdir(parents=True, exist_ok=True)
-        np.save(dest_path, normal)
+        cv2.imwrite(dest_path, normal)
+        torch.cuda.empty_cache()
+
+        
