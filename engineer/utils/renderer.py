@@ -282,12 +282,16 @@ def load_ori_mesh(fn):
                         process = False)
 
 def render_rafare(pred_align_mesh):
-    
     this_mesh = pred_align_mesh.copy()
-
     norms = compute_normal(this_mesh.vertices, this_mesh.faces)
-    return norms
-
+    this_mesh.visual = trimesh.visual.ColorVisuals(mesh = this_mesh, 
+                                                    vertex_colors = (norms[:,[2,1,0]] + 1) / 2)
+    depth_img, rend_img = render_orthcam(this_mesh, 
+                                            xy_mag = (1,1), 
+                                            rend_size = (512, 512),
+                                            flat_shading = True)
+    rend_img = rend_img[:,:,::-1]
+    return rend_img
 
 
 
