@@ -9,10 +9,10 @@ from tqdm import tqdm
 from pathlib import Path
 
 
-sys.path.append("./engineer/face_parse/")
+sys.path.append("engineer/face_parse/")
 from face_parse import face_parse
 
-sys.path.append("./engineer/norm_pred/")
+sys.path.append("engineer/norm_pred/")
 from norm_pred import norm_pred
 
 
@@ -20,8 +20,8 @@ from norm_pred import norm_pred
 if __name__ == "__main__":
     hg_base = load_trained_model(os.path.join('.', "configs", "SDF_FS103450_HG_base.py"), "epoch_best.tar")
     hg_fine = load_trained_model(os.path.join('.', "configs", "SDF_FS103450_HG_fine.py"), "epoch_best.tar")
-    csv_file = ""
-    data_dir = ""
+    csv_file = "/mnt/hmi/thuong/Photoface_dist/PhotofaceDBNormalTrainValTest2/dataset_0/test.csv"
+    data_dir =  "/mnt/hmi/thuong/Photoface_dist/PhotofaceDBLib/"
     result_dir = "./results"
 
     data_info = pd.read_csv(csv_file, header=None)
@@ -60,6 +60,8 @@ if __name__ == "__main__":
 
         # render in front view
         normal = render_rafare(pred_align_mesh)
+        normal = normal.reshape((512, 512))
+        print(normal.shape)
         cv2.resize(normal, (256, 256), interpolation=cv2.INTER_NEAREST)
         dest_path = os.path.join(result_dir, data_info.iloc[image_idx, 0]).replace("crop.jpg", "predict.npy")
         Path(dest_path).parent.mkdir(parents=True, exist_ok=True)

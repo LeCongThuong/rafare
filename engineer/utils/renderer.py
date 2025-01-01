@@ -281,7 +281,7 @@ def load_ori_mesh(fn):
                         maintain_order = True, 
                         process = False)
 
-def get_normal(pred_align_mesh):
+def render_rafare(pred_align_mesh):
     
     this_mesh = pred_align_mesh.copy()
 

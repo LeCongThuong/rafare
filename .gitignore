@@ -1,1 +1,3 @@
-reuslts/
+results/
+checkpoints/*
+__pycache__/
