@@ -18,10 +18,7 @@ from utils.distributed import load_checkpoints
 src2mask_dict = np.array([0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0])
 src2sem_dict = np.array([8, 4, 0, 4, 2, 2, 3, 3, 6, 6, 5, 1, 1, 7, 7, 6, 6, 6, 8])
 
-def recon_single(cfg_fn, epoch_name, src_img, src_sem_mask, num_samples=180000):
-
-    mask = src2mask_dict[src_sem_mask].astype(np.uint8)*255
-    
+def load_trained_model(cfg_fn, epoch_name):
     cfg = Config.fromfile(cfg_fn)
     model = build_model(cfg.model).cuda()
     
@@ -29,7 +26,13 @@ def recon_single(cfg_fn, epoch_name, src_img, src_sem_mask, num_samples=180000):
     checkpoints_path, _ = get_experiments_id(cfg)
     resume_path = os.path.join(checkpoints_path, epoch_name)
     epoch = load_checkpoints(model, None, resume_path, opt)
+    return model
 
+
+def recon_single(model, src_img, src_sem_mask, num_samples=180000):
+
+    mask = src2mask_dict[src_sem_mask].astype(np.uint8)*255
+    
     # predict base sdf
     sdf_base, mat = hsdf_pred(model, src_img, src_sem_mask, mask, 
                               vol_size=256, num_samples=num_samples)

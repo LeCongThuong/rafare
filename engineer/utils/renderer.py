@@ -204,7 +204,7 @@ def rotate_verts_y(verts, y):
     return verts
 
 
-def align_rafare(fn, f_gt=-1):
+def align_rafare(pred_world_mesh, f_gt=-1):
     gt_img_size = 512
     render_bias = 2.
     R_pers2ortho = np.array([[1, 0, 0], 
@@ -212,7 +212,7 @@ def align_rafare(fn, f_gt=-1):
                              [0, 0, -1]], dtype = np.float64)
     
     # read mesh
-    pred_world_mesh = load_ori_mesh(fn)
+    # pred_world_mesh = load_ori_mesh(fn)
     pred_align_mesh = pred_world_mesh.copy()
     
     if f_gt > 0:
@@ -281,41 +281,12 @@ def load_ori_mesh(fn):
                         maintain_order = True, 
                         process = False)
 
-def render_rafare(pred_align_mesh, background=None, norm=False, rot=0):
+def get_normal(pred_align_mesh):
     
     this_mesh = pred_align_mesh.copy()
-    if rot!=0:
-        this_mesh.vertices = rotate_verts_y(this_mesh.vertices, rot)
-        
-    if norm is False:
-        # rend mesh
-        depth_img, rend_img = render_orthcam(this_mesh, 
-                                             xy_mag = (1,1), 
-                                             rend_size = (512, 512))
-        rend_img = clahe_L(rend_img)
-        if background is None:
-            return rend_img
-        else:
-            mask = np.stack((depth_img==0, )*3).transpose((1, 2, 0))
-            merge_img = background.copy()
-            merge_img[mask==0] = rend_img[mask==0]
-            return merge_img
-    else:
-        norms = compute_normal(this_mesh.vertices, this_mesh.faces)
-        this_mesh.visual = trimesh.visual.ColorVisuals(mesh = this_mesh, 
-                                                       vertex_colors = (norms[:,[2,1,0]] + 1) / 2)
-        depth_img, rend_img = render_orthcam(this_mesh, 
-                                             xy_mag = (1,1), 
-                                             rend_size = (512, 512),
-                                             flat_shading = True)
-        rend_img = rend_img[:,:,::-1]
-        if background is None:
-            return rend_img
-        else:
-            mask = np.stack((depth_img==0, )*3).transpose((1, 2, 0))
-            merge_img = background.copy()
-            merge_img[mask==0] = rend_img[mask==0]
-            return merge_img
+
+    norms = compute_normal(this_mesh.vertices, this_mesh.faces)
+    return norms
 
 
 
